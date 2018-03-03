@@ -33,8 +33,9 @@ right (x, y) = (min 2 (x + 1), y)
 
 go :: String -> Position -> Position
 go [] position = position
-go (step:other) position = foldl (flip takeStep) position other
+go (_:other) position = foldl (flip takeStep) position other
 
+resultate :: Show a =>[String] -> Position -> String -> [[a]] -> String
 resultate [] _ result _ = result
 resultate (instruction:other) position result keyboard = 
     let (x, y) = go instruction position
