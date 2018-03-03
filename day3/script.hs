@@ -1,27 +1,33 @@
 import Data.List.Split
+import System.Environment
 
-parse :: String -> [String]
-parse = splitOn "\n"
+parse params = map (\x -> read x :: Int) (words params)
 
-split :: String -> [Int]
-split = map (\x -> read x) $ splitOn " "
+isTriangle params
+    | a + b > c && a + c > b && b + c > a = True
+    | otherwise = False
+    where
+        a = head params
+        b = params !! 1
+        c = params !! 2
 
-isTriangle :: [Int] -> Bool
-isTriangle [a, b, c] 
-	| a + b > c && a + c > b && d + c > a = Truw
-	| otherwise = False
+compute1 input = result where
+    trianglesParams = map parse (lines input)
+    triangles = filter isTriangle trianglesParams
+    result = length triangles
 
-compute1 :: String -> String
-compute1 input = do
-	trianglesParam = parse input . map split
-	triangles = filter (\triangle -> isTriangle triangle) trianglesParam
-	return $ show (length triangles) 
+compute2 :: String -> String
+compute2 input = result where
+    result = "result2"
 
 main :: IO()
-main = print (result1, result2) where
-	input = getInput "input.txt"
-	result1 = compute1 input
-	result2 = ""
+main = do
+    input <- getText
+    let result1 = compute1 input;
+        result2 = compute2 input
+    print (result1, result2)
 
-getInput :: String -> String
-getInput path = text <- readFile path
+getText :: IO String
+getText = do
+    args <- getArgs
+    readFile $ head args
