@@ -1,3 +1,4 @@
+import Data.List
 import Data.List.Split
 import System.Environment
 
@@ -11,14 +12,22 @@ isTriangle params
         b = params !! 1
         c = params !! 2
 
+compute1 :: String -> String
 compute1 input = result where
     trianglesParams = map parse (lines input)
     triangles = filter isTriangle trianglesParams
-    result = length triangles
+    result = show $ length triangles
+
+transform :: [[Int]] -> [[Int]] -> [[Int]]
+transform [] params = params
+transform (fline:sline:tline:other) params = transform other (params ++ transpose [fline, sline, tline])
 
 compute2 :: String -> String
 compute2 input = result where
-    result = "result2"
+    trianglesParams = map parse (lines input)
+    newTrianglesParams = transform trianglesParams []
+    triangles = filter isTriangle newTrianglesParams
+    result = show $ length triangles
 
 main :: IO()
 main = do
