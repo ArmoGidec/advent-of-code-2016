@@ -1,9 +1,16 @@
-import Data.Monoid
+import qualified Data.Set as Set
+import Data.List
 import Data.List.Split
 import Text.Regex.Posix
 import System.Environment
 
 type Room = (String, String, Int)
+
+task :: String -> [(Char, Int)]
+task list = 
+    let set = Set.fromList list
+    in map instanceIn (Set.toList set) where
+        instanceIn x = (x, length $ filter (==x) list)
 
 parse :: String -> Room
 parse line = (name, checksum, id) where
@@ -12,7 +19,10 @@ parse line = (name, checksum, id) where
     checksum = last params =~ "([a-z]+)" :: String
     id = read (last params =~ "([0-9]+)" :: String) :: Int
 
-resultate (name, checksum, id) = id
+resultate (name, checksum, id) =
+    let seq = task name
+    in fst $ unzip $ take 5 seq
+
 
 compute1 input = result where
     rooms = map parse (lines input)
