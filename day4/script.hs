@@ -1,5 +1,6 @@
 import qualified Data.Set as Set
 import Data.List
+import Data.Function (on)
 import Data.List.Split
 import Text.Regex.Posix
 import System.Environment
@@ -12,6 +13,9 @@ task list =
     in map instanceIn (Set.toList set) where
         instanceIn x = (x, length $ filter (==x) list)
 
+getMax :: Eq a => [(a, Int)] -> [(a,Int)]
+getMax = sortBy (flip compare `on` snd)
+
 parse :: String -> Room
 parse line = (name, checksum, id) where
     params = splitOn "-" line;
@@ -21,12 +25,12 @@ parse line = (name, checksum, id) where
 
 resultate (name, checksum, id) =
     let seq = task name
-    in fst $ unzip $ take 5 seq
-
+    in checksum == fst (unzip $ take 5 $ getMax seq)
 
 compute1 input = result where
     rooms = map parse (lines input)
-    result = map resultate rooms
+    realRooms = filter resultate rooms
+    result = foldl (\acc (_,_,id) -> acc+id) 0 realRooms
 
 compute2 :: String -> String
 compute2 input = result where
