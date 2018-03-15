@@ -1,6 +1,6 @@
 import qualified Data.Set as Set
 import Data.List
-import Data.Function (on)
+import Data.Function (on, (&))
 import Data.List.Split
 import Text.Regex.Posix
 import System.Environment
@@ -17,20 +17,23 @@ getMax :: Eq a => [(a, Int)] -> [(a,Int)]
 getMax = sortBy (flip compare `on` snd)
 
 parse :: String -> Room
-parse line = (name, checksum, id) where
-    params = splitOn "-" line;
+parse line = (name, checksum, roomId) where
+    params = splitOn "-" line
     name = mconcat $ init params
     checksum = last params =~ "([a-z]+)" :: String
-    id = read (last params =~ "([0-9]+)" :: String) :: Int
+    roomId = read (last params =~ "([0-9]+)" :: String) :: Int
 
-resultate (name, checksum, id) =
-    let seq = task name
-    in checksum == fst (unzip $ take 5 $ getMax seq)
+resultate :: Room -> Bool 
+resultate (name, checksum, _) =
+    let s = task name
+    in checksum == fst (unzip $ take 5 $ getMax s)
 
-compute1 input = result where
-    rooms = map parse (lines input)
-    realRooms = filter resultate rooms
-    result = foldl (\acc (_,_,id) -> acc+id) 0 realRooms
+compute1 :: String -> Int
+compute1 input = input
+    & lines
+    & map parse
+    & filter resultate
+    & foldl (\acc (_, _, roomId) -> acc + roomId) 0
 
 compute2 :: String -> String
 compute2 input = result where
