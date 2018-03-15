@@ -1,4 +1,5 @@
 import qualified Data.Set as Set
+import Data.Maybe
 import Data.List
 import Data.Function (on, (&))
 import Data.List.Split
@@ -6,6 +7,9 @@ import Text.Regex.Posix
 import System.Environment
 
 type Room = (String, String, Int)
+
+alphabet :: String
+alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 task :: String -> [(Char, Int)]
 task list = 
@@ -16,8 +20,8 @@ task list =
 getMax :: Eq a => [(a, Int)] -> [(a,Int)]
 getMax = sortBy (flip compare `on` snd)
 
-parse :: String -> Room
-parse line = (name, checksum, roomId) where
+parse1 :: String -> Room
+parse1 line = (name, checksum, roomId) where
     params = splitOn "-" line
     name = mconcat $ init params
     checksum = last params =~ "([a-z]+)" :: String
@@ -29,15 +33,45 @@ resultate (name, checksum, _) =
     in checksum == fst (unzip $ take 5 $ getMax s)
 
 compute1 :: String -> Int
-compute1 input = input
-    & lines
-    & map parse
+compute1 input = lines input
+    & map parse1
     & filter resultate
     & foldl (\acc (_, _, roomId) -> acc + roomId) 0
 
-compute2 :: String -> String
-compute2 input = result where
-    result = "result2"
+parse2 :: String -> ([String], Int)
+parse2 line = (name, spaces) where
+    params = splitOn "-" line
+    name = init params
+    spaces = read (last params =~ "([0-9]+)" :: String) :: Int
+
+decrypt_char :: Int -> Char -> Char
+decrypt_char len char = 
+    (elemIndex char alphabet
+    & fromJust
+    & (+) len) `mod` 26
+    & (!!) alphabet
+
+decrypt :: Int -> String -> String
+decrypt len = 
+    map (decrypt_char len)
+
+resultate2 :: ([String], Int) -> (String, Int)
+resultate2 (str, len) = 
+    let sentence = map (decrypt (len `mod` 26)) str
+            & unwords
+    in (sentence, len)
+
+findNorthPole :: (String, Int) -> Bool
+findNorthPole (sentence, _) = words sentence
+    & elem "northpole"
+
+compute2 :: String -> Int
+compute2 input = lines input
+    & map parse2
+    & map resultate2
+    & filter findNorthPole
+    & head
+    & snd
 
 main :: IO()
 main = do
